@@ -54,19 +54,19 @@ This downloads the model from Hugging Face (~6GB) and saves it to the `./model/`
 ### Single image
 
 ```bash
-python ocr.py -i photo.jpg
+python src/ocr/ocr.py -i photo.jpg
 ```
 
 ### Multiple images (treated as a multi-page document)
 
 ```bash
-python ocr.py -i page1.png page2.png page3.png
+python src/ocr/ocr.py -i page1.png page2.png page3.png
 ```
 
 ### PDF file
 
 ```bash
-python ocr.py -i document.pdf --pdf
+python src/ocr/ocr.py -i document.pdf --pdf
 ```
 
 The PDF is automatically converted to images page by page, then passed to the model.
@@ -77,13 +77,13 @@ Use `-P` to select specific pages instead of processing the whole document:
 
 ```bash
 # Pages 2 to 5 only
-python ocr.py -i document.pdf --pdf -P '2-5'
+python src/ocr/ocr.py -i document.pdf --pdf -P '2-5'
 
 # Pages 2-5, page 8, and pages 11 to 21
-python ocr.py -i document.pdf --pdf -P '2-5,8,11-21'
+python src/ocr/ocr.py -i document.pdf --pdf -P '2-5,8,11-21'
 
 # A mix of individual pages and ranges
-python ocr.py -i document.pdf --pdf -P '1,3,5-10,15'
+python src/ocr/ocr.py -i document.pdf --pdf -P '1,3,5-10,15'
 ```
 
 - Page numbers are **1-based** (matching your PDF viewer)
@@ -94,7 +94,7 @@ python ocr.py -i document.pdf --pdf -P '1,3,5-10,15'
 ### Custom output directory
 
 ```bash
-python ocr.py -i photo.jpg -o my_results/
+python src/ocr/ocr.py -i photo.jpg -o my_results/
 ```
 
 Results are saved to `./output/` by default.
@@ -102,7 +102,7 @@ Results are saved to `./output/` by default.
 ### Also export plain text
 
 ```bash
-python ocr.py -i document.pdf --pdf --txt
+python src/ocr/ocr.py -i document.pdf --pdf --txt
 ```
 
 By default only `result.md` is saved. Pass `--txt` to also produce `result.txt`.
@@ -110,7 +110,7 @@ By default only `result.md` is saved. Pass `--txt` to also produce `result.txt`.
 ### Limit output length (useful on CPU)
 
 ```bash
-python ocr.py -i document.pdf --pdf -L 4096
+python src/ocr/ocr.py -i document.pdf --pdf -L 4096
 ```
 
 Caps the number of generated tokens. Lower values finish faster. Default is `32768`.
@@ -119,10 +119,10 @@ Caps the number of generated tokens. Lower values finish faster. Default is `327
 
 ```bash
 # Force CPU
-python ocr.py -i photo.jpg -d cpu
+python src/ocr/ocr.py -i photo.jpg -d cpu
 
 # Force CUDA
-python ocr.py -i photo.jpg -d cuda
+python src/ocr/ocr.py -i photo.jpg -d cuda
 ```
 
 By default the script auto-detects the best device. On Apple Silicon, MPS is skipped because this model architecture produces incorrect results on it — CPU is used instead.
@@ -157,13 +157,18 @@ After each run the following files are written to the output directory:
 
 ```
 ocrai/
-├── .venv/                  # Python virtual environment
-├── model/                  # Downloaded model files (created by download_model.py)
-├── output/                 # OCR results (created on first run)
-├── download_model.py       # Downloads the model from Hugging Face
-├── ocr.py                  # Main OCR inference script
-├── requirements.txt        # Python dependencies
-└── README.md               # This file
+├── .venv/                      # Python virtual environment
+├── model/                      # Downloaded model files (created by download_model.py)
+├── output/                     # OCR results (created on first run)
+├── src/
+│   ├── chats/
+│   │   ├── chat_hf.py          # Chat via Hugging Face Inference API
+│   │   └── chat_ollama.py      # Chat via local Ollama
+│   └── ocr/
+│       └── ocr.py              # Main OCR inference script
+├── download_model.py           # Downloads the model from Hugging Face
+├── requirements.txt            # Python dependencies
+└── README.md                   # This file
 ```
 
 ---
