@@ -1,14 +1,39 @@
-# ocrai — Unlimited-OCR Local Inference
+# ocrai — OCR & PDF-to-Speech
 
-A local setup for running [Baidu's Unlimited-OCR](https://github.com/baidu/Unlimited-OCR) model on your machine. Supports single images, multi-page documents, and PDF files.
+A local setup for running [Baidu's Unlimited-OCR](https://github.com/baidu/Unlimited-OCR) model on your machine, with a **Gradio web app** that converts PDFs to text and reads them aloud using text-to-speech.
 
-## What is Unlimited-OCR?
+## Features
+
+- **OCR** — Extract text from images and PDFs using Unlimited-OCR (3B parameter vision-language model)
+- **PDF to Speech** — Upload a PDF, extract text via OCR, and listen to it with natural-sounding voices
+- **Text to Speech** — Type or paste any text and convert it to audio
+- **Multilingual voices** — 8 voices across Portuguese (BR & PT) and English (US & GB)
+- **Gradio web UI** — Browser-based interface with audio playback, download, and speed controls
+
+### Unlimited-OCR
 
 Unlimited-OCR is a 3B parameter vision-language model developed by Baidu for document parsing. It extracts text from images and PDFs in a single inference pass, handling complex layouts, tables, and multi-page documents.
 
 - Model size: ~6GB (BF16)
 - License: MIT
 - Source: [baidu/Unlimited-OCR on Hugging Face](https://huggingface.co/baidu/Unlimited-OCR)
+
+### Text-to-Speech
+
+TTS is powered by [edge-tts](https://github.com/rany2/edge-tts), which uses Microsoft Edge's free online TTS API. Requires an internet connection.
+
+Available voices:
+
+| Voice | Locale | Gender |
+|-------|--------|--------|
+| Francisca | PT-BR | Female |
+| Antonio | PT-BR | Male |
+| Raquel | PT-PT | Female |
+| Duarte | PT-PT | Male |
+| Aria | EN-US | Female |
+| Guy | EN-US | Male |
+| Sonia | EN-GB | Female |
+| Ryan | EN-GB | Male |
 
 ---
 
@@ -51,19 +76,36 @@ This downloads the model from Hugging Face (~6GB) and saves it to the `./model/`
 
 ## Usage
 
-### Single image
+### Web App (PDF to Speech)
+
+```bash
+python src/tts/app.py
+```
+
+Then open http://127.0.0.1:7860 in your browser. The app has two tabs:
+
+- **PDF to Speech** — Upload a PDF, optionally select a page range, pick a voice and speed, then click "Extract & Speak". The OCR model extracts text from the PDF, then edge-tts converts it to audio.
+- **Text to Speech** — Type or paste text directly, pick a voice, and click "Speak".
+
+The OCR model (~6GB) is loaded on demand when the first PDF is uploaded. The Text to Speech tab works instantly without it.
+
+---
+
+### CLI (OCR only)
+
+#### Single image
 
 ```bash
 python src/ocr/ocr.py -i photo.jpg
 ```
 
-### Multiple images (treated as a multi-page document)
+#### Multiple images (treated as a multi-page document)
 
 ```bash
 python src/ocr/ocr.py -i page1.png page2.png page3.png
 ```
 
-### PDF file
+#### PDF file
 
 ```bash
 python src/ocr/ocr.py -i document.pdf --pdf
@@ -71,7 +113,7 @@ python src/ocr/ocr.py -i document.pdf --pdf
 
 The PDF is automatically converted to images page by page, then passed to the model.
 
-### PDF with page range
+#### PDF with page range
 
 Use `-P` to select specific pages instead of processing the whole document:
 
@@ -91,7 +133,7 @@ python src/ocr/ocr.py -i document.pdf --pdf -P '1,3,5-10,15'
 - Out-of-range numbers are ignored with a warning
 - Without `-P`, all pages are processed
 
-### Custom output directory
+#### Custom output directory
 
 ```bash
 python src/ocr/ocr.py -i photo.jpg -o my_results/
@@ -99,7 +141,7 @@ python src/ocr/ocr.py -i photo.jpg -o my_results/
 
 Results are saved to `./output/` by default.
 
-### Also export plain text
+#### Also export plain text
 
 ```bash
 python src/ocr/ocr.py -i document.pdf --pdf --txt
@@ -107,7 +149,7 @@ python src/ocr/ocr.py -i document.pdf --pdf --txt
 
 By default only `result.md` is saved. Pass `--txt` to also produce `result.txt`.
 
-### Limit output length (useful on CPU)
+#### Limit output length (useful on CPU)
 
 ```bash
 python src/ocr/ocr.py -i document.pdf --pdf -L 4096
@@ -115,7 +157,7 @@ python src/ocr/ocr.py -i document.pdf --pdf -L 4096
 
 Caps the number of generated tokens. Lower values finish faster. Default is `32768`.
 
-### Force a specific device
+#### Force a specific device
 
 ```bash
 # Force CPU
@@ -127,7 +169,7 @@ python src/ocr/ocr.py -i photo.jpg -d cuda
 
 By default the script auto-detects the best device. On Apple Silicon, MPS is skipped because this model architecture produces incorrect results on it — CPU is used instead.
 
-### All options
+#### All options
 
 | Flag | Long form | Default | Description |
 |------|-----------|---------|-------------|
@@ -164,8 +206,10 @@ ocrai/
 │   ├── chats/
 │   │   ├── chat_hf.py          # Chat via Hugging Face Inference API
 │   │   └── chat_ollama.py      # Chat via local Ollama
-│   └── ocr/
-│       └── ocr.py              # Main OCR inference script
+│   ├── ocr/
+│   │   └── ocr.py              # OCR inference script (CLI)
+│   └── tts/
+│       └── app.py              # Gradio web app (PDF to Speech)
 ├── download_model.py           # Downloads the model from Hugging Face
 ├── requirements.txt            # Python dependencies
 └── README.md                   # This file
@@ -188,3 +232,5 @@ ocrai/
 | pymupdf | 1.27.2.2 | PDF to image conversion |
 | psutil | 7.2.2 | System memory monitoring |
 | huggingface_hub | latest | Model download from Hugging Face |
+| gradio | latest | Web UI framework |
+| edge-tts | latest | Text-to-speech via Microsoft Edge API |

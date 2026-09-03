@@ -9,3 +9,5 @@ easydict==1.13
 pymupdf==1.27.2.2
 psutil==7.2.2
 huggingface_hub
+gradio
+edge-tts
